@@ -1,5 +1,5 @@
-import com.google.common.util.concurrent.Futures;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.twill.api.Command;
 import org.apache.twill.api.ResourceSpecification;
 import org.apache.twill.api.TwillController;
 import org.apache.twill.api.TwillRunnerService;
@@ -7,11 +7,13 @@ import org.apache.twill.api.logging.PrinterLogHandler;
 import org.apache.twill.yarn.YarnTwillRunnerService;
 
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class Main {
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws ExecutionException, InterruptedException {
 
         if (args.length < 1) {
             System.err.println("Arguments format: <host:port of zookeeper server>");
@@ -34,19 +36,28 @@ public class Main {
 
         runnerService.start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                Futures.getUnchecked(controller.terminate());
-            } finally {
-                runnerService.stop();
-            }
-        }));
+        Thread.sleep(30000);
+        controller.sendCommand(new MyCommand("Sent command. Hello World!"));
 
-        try {
-            controller.awaitTerminated();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        controller.awaitTerminated();
+
+    }
+
+    static class MyCommand implements Command {
+        String command;
+
+        MyCommand(String command) {
+            this.command = command;
         }
 
+        @Override
+        public String getCommand() {
+            return command;
+        }
+
+        @Override
+        public Map<String, String> getOptions() {
+            return new HashMap<>();
+        }
     }
 }

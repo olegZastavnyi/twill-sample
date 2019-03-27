@@ -7,6 +7,12 @@ public class Job extends AbstractTwillRunnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Job.class);
 
+
+    @Override
+    public void handleCommand(Command command) {
+        LOG.info("COMMAND-" + command.getCommand() + " InstanceId: " + getContext().getInstanceId());
+    }
+
     @Override
     public void run() {
         LOG.info("START-"
